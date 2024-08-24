@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "blog-messages-nodejs-rcs-water-drinking",
+  "version": "1.0.0",
+  "description": "Code for the RCS Water drinking app blog post",
+  "main": "src/src.js",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "start": "node src/server.js",
+    "watch": "nodemon --watch src --exec node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Vonage-Community/blog-messages-nodejs-rcs-water-drinking.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Vonage-Community/blog-messages-nodejs-rcs-water-drinking/issues"
+  },
+  "homepage": "https://github.com/Vonage-Community/blog-messages-nodejs-rcs-water-drinking#readme",
+  "dependencies": {
+    "@eslint/js": "9.9.0",
+    "@stylistic/eslint-plugin-js": "2.6.4",
+    "@vonage/auth": "1.11.0",
+    "@vonage/eslint-config": "1.3.1",
+    "@vonage/jwt": "1.11.0",
+    "@vonage/messages": "1.15.0",
+    "@vonage/server-sdk": "3.16.0",
+    "cron": "3.1.7",
+    "debug": "4.3.6",
+    "dotenv": "16.4.5",
+    "eslint": "9.9.0",
+    "eslint-plugin-n": "17.10.2",
+    "express": "4.19.2",
+    "globals": "15.9.0",
+    "jsonwebtoken": "9.0.2",
+    "uuid": "10.0.0"
+  }
+}
