@@ -2,18 +2,40 @@ import Express from 'express';
 import jwt from 'jsonwebtoken';
 import debug from 'debug';
 import { tokenGenerate } from '@vonage/jwt';
+import { Messages, vcr } from '@vonage/vcr-sdk';
 import { RCSCustom } from '@vonage/messages';
 import { v4 as uuid } from 'uuid';
-import { auth, vonage } from './vonage.js';
-
-import { CronJob } from 'cron';
+import { Vonage } from '@vonage/server-sdk';
+import { Auth } from '@vonage/auth';
 
 const log = debug('water:server');
+
+log(process.env);
+
+import { existsSync, readFileSync } from 'fs';
+
+const privateKey = existsSync(process.env.VONAGE_PRIVATE_KEY)
+  ? readFileSync(process.env.VONAGE_PRIVATE_KEY)
+  : process.env.VONAGE_PRIVATE_KEY || process.env.VCR_PRIVATE_KEY;
+
+const auth = new Auth({
+  apiKey: process.env.VONAGE_API_KEY 
+    || process.env.VCR_API_ACCOUNT_ID,
+  apiSecret: process.env.VONAGE_API_SECRET
+    || process.env.VCR_API_ACCOUNT_SECRET,
+  applicationId: process.env.VONAGE_APPLICATION_ID
+    || process.env.API_APPLICATION_ID,
+  privateKey: privateKey,
+});
+
+const vonage = new Vonage(auth);
+
+import { CronJob } from 'cron';
 
 const app = new Express();
 const port = process.env.PORT || process.env.VCR_PORT || 3000;
 
-const reminderNumber = '447904603505';
+const reminderNumber = process.env.REMINDER_NUMBER;
 
 const reminders = [];
 
@@ -22,7 +44,18 @@ const catchAsync = (fn) => (req, res, next) => {
   fn(req, res, next).catch(next);
 };
 
+const session = vcr.createSession();
+const voice = new Voice(session);
+const messaging = new Messages(session);
+
+await messaging.onMessage('onMessage', from, vonageNumber);
+await messaging.onMessageEvent('onEvent', from, vonageNumber);
+
 app.use(Express.json());
+
+app.get('/_/health', (_, res) => {
+  res.status(200).send('OK');
+});
 
 app.post('/status', catchAsync(async (req, res) => {
   log('Status', req.body);
@@ -63,7 +96,7 @@ app.post('/inbound', catchAsync(async (req, res) => {
 
   const index = reminders.findIndex((reminder) => reminder.number === from);
   reminders.splice(index, 1);
-  console.log('Reminder removed', reminders);
+  log('Reminder removed', reminders);
 
   res.status(200).json({ok: true});
 }));
@@ -120,15 +153,21 @@ const validateToken = (token) => {
 };
 
 const checkForReminders = (number) => {
-  const search = reminders.find((reminder) => reminder.number === number);
+  const search = reminders.findIndex((reminder) => reminder.number === number);
   if (!search) {
     console.log('No reminder found');
     return false;
   }
 
-  const { token } = search;
+  const { token } = reminders[search];
   console.log('Checking token', token);
-  return validateToken(token);
+  if (!validateToken(token)) {
+    log('Removing reminder: invalid token');
+    reminders.splice(search, 1);
+    return false;
+  }
+
+  return true;
 };
 
 //const job = new CronJob(
@@ -165,7 +204,7 @@ const sendMessage = (number, exp) => {
 
   const message = new RCSCustom({
     to: number,
-    from: 'VonageRCSDemo-DevRel',
+    from: '',
     custom: {
       contentMessage: {
         richCard: {
@@ -195,15 +234,15 @@ const sendMessage = (number, exp) => {
     },
   });
 
-  console.log('Sending reminder', message);
+  log('Sending reminder', message);
   vonage.messages.send(message)
     .then((res) => {
-      console.log('Message sent', res);
+      log('Message sent', res);
     })
     .catch((err) => {
-      console.error('Error sending message');
+      log('Error sending message');
       err.response.text().then((text) => {
-        console.log(text);
+        log(text);
       },
       );
     });
