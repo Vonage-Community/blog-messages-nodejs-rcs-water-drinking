@@ -34,7 +34,7 @@
     "dotenv": "16.4.5",
     "eslint": "9.9.0",
     "eslint-plugin-n": "17.10.2",
-    "express": "4.19.2",
+    "express": "4.20.0",
     "globals": "15.9.0",
     "jsonwebtoken": "9.0.2",
     "uuid": "10.0.0"
