@@ -32,7 +32,7 @@
     "cron": "3.1.7",
     "debug": "4.3.6",
     "dotenv": "16.4.5",
-    "eslint": "9.9.0",
+    "eslint": "9.15.0",
     "eslint-plugin-n": "17.10.2",
     "express": "4.19.2",
     "globals": "15.9.0",
